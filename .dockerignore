@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+*.md
+.git
+.gitignore
+docker-compose*.yml
+Dockerfile
+Caddyfile
+*.bat
+sample.env
+

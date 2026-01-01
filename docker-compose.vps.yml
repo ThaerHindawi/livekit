@@ -1,0 +1,79 @@
+# VPS Production Docker Compose with HTTPS
+# 
+# BEFORE USING:
+# 1. Replace YOUR_DOMAIN.COM with your actual domain in this file
+# 2. Replace YOUR_DOMAIN.COM in Caddyfile
+# 3. Point your domain's DNS to your VPS IP
+# 4. Generate secure API keys (see below)
+#
+# To generate secure keys, run:
+#   docker run --rm livekit/livekit-server generate-keys
+#
+# Usage: docker-compose -f docker-compose.vps.yml up -d
+
+services:
+  # ===========================================
+  # LiveKit Server (WebRTC SFU)
+  # ===========================================
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-server
+    ports:
+      - "7881:7881"     # RTC over TCP
+      - "7882:7882/udp" # RTC over UDP
+    environment:
+      - LIVEKIT_KEYS=${LIVEKIT_API_KEY}:${LIVEKIT_API_SECRET}
+    command: >
+      --bind 0.0.0.0
+      --node-ip ${VPS_PUBLIC_IP}
+    restart: unless-stopped
+    networks:
+      - livekit-network
+
+  # ===========================================
+  # Node.js Token Server + Web App
+  # ===========================================
+  webapp:
+    build: .
+    container_name: livekit-webapp
+    expose:
+      - "3000"
+    environment:
+      - PORT=3000
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - LIVEKIT_WS_URL=wss://${DOMAIN}/livekit
+    depends_on:
+      - livekit
+    restart: unless-stopped
+    networks:
+      - livekit-network
+
+  # ===========================================
+  # Caddy (Automatic HTTPS - Free SSL)
+  # ===========================================
+  caddy:
+    image: caddy:latest
+    container_name: livekit-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - webapp
+      - livekit
+    restart: unless-stopped
+    networks:
+      - livekit-network
+
+networks:
+  livekit-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+

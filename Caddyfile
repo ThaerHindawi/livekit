@@ -1,0 +1,25 @@
+# Caddyfile - Automatic HTTPS Reverse Proxy
+# Replace YOUR_DOMAIN.COM with your actual domain
+
+YOUR_DOMAIN.COM {
+    # Main web app
+    reverse_proxy webapp:3000
+
+    # LiveKit WebSocket signaling
+    handle_path /livekit/* {
+        reverse_proxy livekit:7880
+    }
+
+    # Enable WebSocket support
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade websocket
+    }
+    reverse_proxy @websockets livekit:7880
+}
+
+# Optional: www redirect
+www.YOUR_DOMAIN.COM {
+    redir https://YOUR_DOMAIN.COM{uri}
+}
+

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiveKit Video Call</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    
+    <!-- Join Screen -->
+    <div id="join-screen" class="screen active">
+      <div class="join-card">
+        <div class="logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="url(#logo-gradient)" stroke-width="4"/>
+            <path d="M18 16L34 24L18 32V16Z" fill="url(#logo-gradient)"/>
+            <defs>
+              <linearGradient id="logo-gradient" x1="0" y1="0" x2="48" y2="48">
+                <stop offset="0%" stop-color="#00D9FF"/>
+                <stop offset="100%" stop-color="#7C3AED"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1>Video Call</h1>
+        </div>
+        
+        <p class="subtitle">Connect face-to-face with crystal clear video</p>
+        
+        <form id="join-form">
+          <div class="input-group">
+            <label for="room-name">Room Name</label>
+            <input 
+              type="text" 
+              id="room-name" 
+              placeholder="Enter a room name..." 
+              required
+              autocomplete="off"
+            >
+            <span class="input-hint">Share this name with the person you want to call</span>
+          </div>
+          
+          <div class="input-group">
+            <label for="participant-name">Your Name</label>
+            <input 
+              type="text" 
+              id="participant-name" 
+              placeholder="Enter your name..." 
+              required
+              autocomplete="off"
+            >
+          </div>
+          
+          <button type="submit" class="btn-primary" id="join-btn">
+            <span class="btn-text">Join Call</span>
+            <span class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </span>
+          </button>
+        </form>
+        
+        <div id="error-message" class="error-message hidden"></div>
+        
+        <div class="features">
+          <div class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>End-to-end encrypted</span>
+          </div>
+          <div class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12,6 12,12 16,14"/>
+            </svg>
+            <span>Low latency</span>
+          </div>
+          <div class="feature">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <span>HD quality</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Call Screen -->
+    <div id="call-screen" class="screen">
+      <div class="call-header">
+        <div class="room-info">
+          <span class="room-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+            <span id="room-display">Room</span>
+          </span>
+          <span class="connection-status" id="connection-status">
+            <span class="status-dot"></span>
+            Connecting...
+          </span>
+        </div>
+        <div class="call-timer" id="call-timer">00:00</div>
+      </div>
+      
+      <div class="video-container">
+        <!-- Remote Video (Large) -->
+        <div class="video-wrapper remote" id="remote-video-wrapper">
+          <video id="remote-video" autoplay playsinline></video>
+          <div class="video-placeholder" id="remote-placeholder">
+            <div class="avatar">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <p>Waiting for participant...</p>
+          </div>
+          <div class="video-label" id="remote-label">Participant</div>
+        </div>
+        
+        <!-- Local Video (Small, Picture-in-Picture) -->
+        <div class="video-wrapper local" id="local-video-wrapper">
+          <video id="local-video" autoplay playsinline muted></video>
+          <div class="video-label" id="local-label">You</div>
+        </div>
+      </div>
+      
+      <div class="controls-bar">
+        <div class="controls-group">
+          <button class="control-btn" id="toggle-mic" title="Toggle Microphone">
+            <svg class="icon-on" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <svg class="icon-off hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn" id="toggle-camera" title="Toggle Camera">
+            <svg class="icon-on" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <svg class="icon-off hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn" id="toggle-screen" title="Share Screen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </button>
+        </div>
+        
+        <button class="control-btn end-call" id="end-call" title="End Call">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/>
+            <line x1="23" y1="1" x2="1" y2="23"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- LiveKit Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.6.1/dist/livekit-client.umd.min.js"></script>
+  <script>
+    // Debug: Log what's available
+    console.log('Checking LiveKit globals...');
+    console.log('window.LivekitClient:', typeof window.LivekitClient);
+    console.log('window.Livekit:', typeof window.Livekit);  
+    console.log('window.livekit:', typeof window.livekit);
+    
+    // Find the correct global
+    const LiveKit = window.LivekitClient || window.Livekit || window.livekit;
+    if (!LiveKit || !LiveKit.Room) {
+      console.error('LiveKit SDK not loaded correctly. Available window keys:', 
+        Object.keys(window).filter(k => k.toLowerCase().includes('live') || k.toLowerCase().includes('kit')));
+    } else {
+      console.log('✅ LiveKit SDK loaded successfully', LiveKit);
+    }
+    // Make it globally available with consistent name
+    window.LiveKitSDK = LiveKit;
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
+

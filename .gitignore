@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Environment files (contains secrets!)
+.env
+.env.*
+!.env.example
+!env.production.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# Docker volumes (if any local data)
+caddy_data/
+caddy_config/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
