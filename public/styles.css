@@ -572,7 +572,7 @@ body {
 }
 
 .volume-slider {
-  width: 80px;
+  width: 100px;
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
@@ -603,6 +603,29 @@ body {
   background: var(--primary);
   cursor: pointer;
   border: none;
+}
+
+.volume-display {
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 40px;
+  color: var(--text-secondary);
+}
+
+.volume-display.boosted {
+  color: var(--primary);
+}
+
+/* Speaker Boost Active */
+.control-btn.boost-active {
+  background: var(--primary);
+  color: var(--bg-dark);
+  animation: pulse-glow 1.5s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
+  50% { box-shadow: 0 0 20px 5px var(--primary-glow); }
 }
 
 /* ========================================

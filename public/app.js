@@ -58,7 +58,14 @@ class VideoCallApp {
       toggleScreen: document.getElementById('toggle-screen'),
       endCall: document.getElementById('end-call'),
       volumeSlider: document.getElementById('volume-slider'),
+      volumeDisplay: document.getElementById('volume-display'),
+      speakerBoost: document.getElementById('speaker-boost'),
     };
+    
+    // Audio boost
+    this.audioContext = null;
+    this.gainNode = null;
+    this.isBoostEnabled = false;
     
     this.init();
   }
@@ -71,6 +78,7 @@ class VideoCallApp {
     this.elements.toggleScreen.addEventListener('click', () => this.toggleScreenShare());
     this.elements.endCall.addEventListener('click', () => this.handleEndCall());
     this.elements.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
+    this.elements.speakerBoost.addEventListener('click', () => this.toggleSpeakerBoost());
     
     // Handle page unload
     window.addEventListener('beforeunload', () => this.cleanup());
@@ -283,8 +291,33 @@ class VideoCallApp {
     // Store reference for volume control
     this.remoteAudioElement = audioElement;
     
+    // Setup Web Audio API for volume boost
+    this.setupAudioBoost(audioElement);
+    
     document.body.appendChild(audioElement);
     console.log('🔊 Remote audio attached, volume:', audioElement.volume);
+  }
+  
+  setupAudioBoost(audioElement) {
+    try {
+      // Create audio context
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create source from audio element
+      const source = this.audioContext.createMediaElementSource(audioElement);
+      
+      // Create gain node for volume boost
+      this.gainNode = this.audioContext.createGain();
+      this.gainNode.gain.value = 1.0; // Normal volume
+      
+      // Connect: source -> gain -> output
+      source.connect(this.gainNode);
+      this.gainNode.connect(this.audioContext.destination);
+      
+      console.log('🔊 Audio boost system initialized');
+    } catch (error) {
+      console.warn('Could not setup audio boost:', error);
+    }
   }
   
   showRemotePlaceholder() {
@@ -340,10 +373,37 @@ class VideoCallApp {
   }
   
   setVolume(value) {
-    const volume = value / 100;
-    if (this.remoteAudioElement) {
-      this.remoteAudioElement.volume = volume;
-      console.log('🔊 Volume set to:', Math.round(volume * 100) + '%');
+    const volumePercent = parseInt(value);
+    
+    // Update display
+    this.elements.volumeDisplay.textContent = volumePercent + '%';
+    this.elements.volumeDisplay.classList.toggle('boosted', volumePercent > 100);
+    
+    if (this.gainNode) {
+      // Use gain node for amplification (can go above 100%)
+      this.gainNode.gain.value = volumePercent / 100;
+      console.log('🔊 Volume set to:', volumePercent + '%');
+    } else if (this.remoteAudioElement) {
+      // Fallback to regular volume (max 100%)
+      this.remoteAudioElement.volume = Math.min(volumePercent / 100, 1);
+    }
+  }
+  
+  toggleSpeakerBoost() {
+    this.isBoostEnabled = !this.isBoostEnabled;
+    
+    if (this.isBoostEnabled) {
+      // Set volume to 200%
+      this.elements.volumeSlider.value = 200;
+      this.setVolume(200);
+      this.elements.speakerBoost.classList.add('boost-active');
+      console.log('🔊 Speaker BOOST enabled!');
+    } else {
+      // Reset to 100%
+      this.elements.volumeSlider.value = 100;
+      this.setVolume(100);
+      this.elements.speakerBoost.classList.remove('boost-active');
+      console.log('🔊 Speaker boost disabled');
     }
   }
   
