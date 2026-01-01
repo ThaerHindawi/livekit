@@ -57,6 +57,7 @@ class VideoCallApp {
       toggleCamera: document.getElementById('toggle-camera'),
       toggleScreen: document.getElementById('toggle-screen'),
       endCall: document.getElementById('end-call'),
+      volumeSlider: document.getElementById('volume-slider'),
     };
     
     this.init();
@@ -69,6 +70,7 @@ class VideoCallApp {
     this.elements.toggleCamera.addEventListener('click', () => this.toggleCamera());
     this.elements.toggleScreen.addEventListener('click', () => this.toggleScreenShare());
     this.elements.endCall.addEventListener('click', () => this.handleEndCall());
+    this.elements.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
     
     // Handle page unload
     window.addEventListener('beforeunload', () => this.cleanup());
@@ -132,6 +134,14 @@ class VideoCallApp {
         dynacast: true,
         videoCaptureDefaults: {
           resolution: { width: 1280, height: 720, frameRate: 30 },
+        },
+        audioCaptureDefaults: {
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+        audioOutput: {
+          volume: 1.0, // Max volume
         },
       });
       
@@ -257,7 +267,24 @@ class VideoCallApp {
   
   attachRemoteAudio(track) {
     const audioElement = track.attach();
+    
+    // Set volume to maximum
+    audioElement.volume = 1.0;
+    
+    // Ensure audio plays
+    audioElement.autoplay = true;
+    audioElement.playsInline = true;
+    
+    // Some browsers need user interaction - try to play
+    audioElement.play().catch(e => {
+      console.warn('Audio autoplay blocked, will play on user interaction');
+    });
+    
+    // Store reference for volume control
+    this.remoteAudioElement = audioElement;
+    
     document.body.appendChild(audioElement);
+    console.log('🔊 Remote audio attached, volume:', audioElement.volume);
   }
   
   showRemotePlaceholder() {
@@ -310,6 +337,14 @@ class VideoCallApp {
   async handleEndCall() {
     await this.cleanup();
     this.showJoinScreen();
+  }
+  
+  setVolume(value) {
+    const volume = value / 100;
+    if (this.remoteAudioElement) {
+      this.remoteAudioElement.volume = volume;
+      console.log('🔊 Volume set to:', Math.round(volume * 100) + '%');
+    }
   }
   
   // ========================================
